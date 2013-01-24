@@ -29,3 +29,6 @@
           <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
         </div>
       </div>
+      <pre>
+      <?php print_r($users);?>
+      </pre>

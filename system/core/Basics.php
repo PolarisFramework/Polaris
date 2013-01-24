@@ -37,7 +37,7 @@
  * @param string $sPrefix
  * @return object
  */
-function &loadClass($sClass, $sDir = 'library', $sPrefix = 'Polaris_')
+function &load_class($sClass, $sDir = 'library', $sPrefix = 'Polaris_')
 {
     static $_aClasses = array();
     
@@ -70,7 +70,7 @@ function &loadClass($sClass, $sDir = 'library', $sPrefix = 'Polaris_')
         show_error('No se puede encontrar la clase especificada:' . $sClass );
     }
     
-    isLoaded($sClass);
+    is_loaded($sClass);
     
     $_aClasses[$sClass] = new $sClassName();
     
@@ -86,7 +86,7 @@ function &loadClass($sClass, $sDir = 'library', $sPrefix = 'Polaris_')
  * @param string $sClass
  * @return array
  */
-function &isLoaded($sClass = '')
+function &is_loaded($sClass = '')
 {
     static $_aLoaded = array();
     
@@ -113,20 +113,4 @@ function show_error($sMessage, $nCode = 500)
 {
     echo utf8_decode($sMessage) . ' - ' . $nCode;
     exit;
-}
-
-// ------------------------------------------------------------------------
-
-/**
- * Mostrar consumo de recursos
- * 
- * @return string
- */
-function show_debug()
-{
-    $iMem = memory_get_usage() - START_MEM;
-    $sContent = round($iMem / 1024, 2) . ' kb &bull; ';
-    $sContent .= number_format(array_sum(explode(' ', microtime())) - START_TIME, 3) . 's';
-    
-    return $sContent;
 }

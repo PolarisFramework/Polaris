@@ -20,3 +20,6 @@
     
     // Ruta del núcleo.
     define('CORE_PATH', SYS_PATH . 'core' . DS);
+    
+    // Ruta a las clases de bases de datos
+    define('DB_PATH', SYS_PATH . 'database' . DS);

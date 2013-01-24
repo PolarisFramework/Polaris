@@ -47,7 +47,7 @@ class Polaris_URI {
      */
     public function __construct()
     {
-        $this->config =& loadClass('Config', 'core');
+        $this->config =& load_class('Config', 'core');
     }
     
     // --------------------------------------------------------------------

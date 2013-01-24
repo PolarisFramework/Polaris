@@ -72,7 +72,7 @@
  *  Crea una instancia de la clase Timer
  * ---------------------------------------------------------------
  */
-    $oTimer =& loadClass('Timer', 'core');
+    $oTimer =& load_class('Timer', 'core');
     $oTimer->mark('total_execution_time_start');
     
 /*
@@ -80,21 +80,21 @@
  *  Crea una instancia de la clase Config
  * ---------------------------------------------------------------
  */
-    $oConfig =& loadClass('Config', 'core');
+    $oConfig =& load_class('Config', 'core');
     
 /*
  * ---------------------------------------------------------------
  *  Crea una instancia de la clase URI
  * ---------------------------------------------------------------
  */
-    $oUri =& loadClass('URI', 'core');
+    $oUri =& load_class('URI', 'core');
     
 /*
  * ---------------------------------------------------------------
  *  Crea una instancia del Router y analiza la ruta.
  * ---------------------------------------------------------------
  */
-    $oRouter =& loadClass('Router', 'core');
+    $oRouter =& load_class('Router', 'core');
     $oRouter->setRouting();
     
 /*
@@ -102,7 +102,7 @@
  *  Crea una instancia de la clase Output
  * ---------------------------------------------------------------
  */
-    $oOutput =& loadClass('Output', 'core');
+    $oOutput =& load_class('Output', 'core');
     
 /*
  * ---------------------------------------------------------------
@@ -113,7 +113,7 @@
     require CORE_PATH . 'App.php';
     require CORE_PATH . 'Controller.php';
     
-    function &getInstance()
+    function &get_instance()
     {
         return Polaris_Controller::getInstance();
     }

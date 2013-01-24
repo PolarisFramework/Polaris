@@ -89,7 +89,7 @@ class Polaris_Layout {
             show_error('No se encuentra el archivo de configuración: layout.php');
         }
         
-        require $sLayoutPath;
+        include $sLayoutPath;
         
         foreach ( array('layout', 'css', 'js') as $sKey)
         {
@@ -111,7 +111,7 @@ class Polaris_Layout {
      */
     public function __get($sName)
     {
-        $oObject =& getInstance();
+        $oObject =& get_instance();
         
         return (isset($this->controller->{$sName})) ? $this->controller->{$sName} : $oObject->{$sName};
     }

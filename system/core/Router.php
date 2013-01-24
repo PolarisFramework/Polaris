@@ -77,9 +77,9 @@ class Polaris_Router {
      */
     public function __construct()
     {
-        $this->config =& loadClass('Config', 'core');
-        $this->uri =& loadClass('URI', 'core');
-        $this->module =& loadClass('Module', 'core');
+        $this->config =& load_class('Config', 'core');
+        $this->uri =& load_class('URI', 'core');
+        $this->module =& load_class('Module', 'core');
     }
     
     // --------------------------------------------------------------------
@@ -104,7 +104,7 @@ class Polaris_Router {
             show_error('No se encuentra el archivo de configuración: routes.php');
         }
         
-        require $sRoutesPath;
+        include $sRoutesPath;
         
         $this->_aRoutes =& $route;
         

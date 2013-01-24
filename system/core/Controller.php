@@ -38,13 +38,13 @@ class Polaris_Controller {
         
         // Asigna todos los objetos que fueron instanciados por el bootstrap
         // a objetos locales para que este se convierta en un super objeto.
-        foreach ( isLoaded() as $sKey => $sClass)
+        foreach ( is_loaded() as $sKey => $sClass)
         {
-            $this->{$sKey} =& loadClass($sClass);
+            $this->{$sKey} =& load_class($sClass);
         }
         
         // Cargador
-        $this->load =& loadClass('Loader', 'core');
+        $this->load =& load_class('Loader', 'core');
         
         $this->load->init();
     }

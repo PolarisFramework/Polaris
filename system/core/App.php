@@ -33,14 +33,14 @@ class App_Controller {
     public function __construct()
     {
         $sClass = str_replace('_Controller', '', get_class($this));
-        loadClass('Module', 'core')->addClass($sClass, $this);
+        load_class('Module', 'core')->addClass($sClass, $this);
         
         // Copiamos una instancia de Layout
-        $this->layout = clone loadClass('Layout', 'core');
+        $this->layout = clone load_class('Layout', 'core');
         $this->layout->init($this);
         
         // Copiamos una instancia de Loader e inicializamos();
-        $this->load = clone loadClass('Loader', 'core');
+        $this->load = clone load_class('Loader', 'core');
         $this->load->init($this);
     }
     
@@ -53,7 +53,7 @@ class App_Controller {
      */
     public function __get($sName)
     {
-        $oObject =& getInstance();
+        $oObject =& get_instance();
         
         return $oObject->{$sName};
     }

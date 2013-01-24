@@ -73,7 +73,7 @@ class Polaris_Loader {
      */
     public function init($oController = null)
     {
-        $oObject =& getInstance();
+        $oObject =& get_instance();
         
         $this->_sModule = $oObject->router->getModule();
         
@@ -98,7 +98,7 @@ class Polaris_Loader {
      */
     public function __get($sName)
     {
-        $oObject =& getInstance();
+        $oObject =& get_instance();
         
         return (isset($this->controller->{$sName})) ? $this->controller->{$sName} : $oObject->{$sName};
     }
@@ -131,7 +131,7 @@ class Polaris_Loader {
         $sAlias = ($sObjectName !== null) ? $sObjectName : basename($sModel);
         
         // Controlador Base
-        $oObject =& getInstance();
+        $oObject =& get_instance();
         
         // Ya hemos cargado este modelo?
         if (isset($oObject->{$sAlias}) && in_array($sAlias, $this->_aModels))
@@ -151,7 +151,7 @@ class Polaris_Loader {
         {
             if ( !class_exists('Polaris_Model'))
             {
-                loadClass('Model', 'core');
+                load_class('Model', 'core');
             }
             // Cargamos el archivo..
             $this->module->loadFile($_sModel . '.model', $sPath);
@@ -170,6 +170,73 @@ class Polaris_Loader {
         }
         
         show_error('No se localizó el modelo espesificado: ' . $sModel);
+    }
+    
+    // --------------------------------------------------------------------
+    
+    /**
+     * Cargar base de datos
+     * 
+     * @access public
+     * @param string $sGroup Cargarémos los datos de conexión desde $db[$sGroup];
+     * @param bool $bReturn Retorna el objecto
+     * @return mixed
+     */
+    public function database($sGroup = '', $bReturn = false)
+    {
+        $oObject =& get_instance();
+        
+        // Necesitamos cargar la DB?
+        if (class_exists('Polaris_Database') && $bReturn == false && isset($oObject->db) && is_object($oObject->db))
+        {
+            return false;
+        }
+        
+        if ( ! file_exists($sFilePath = APP_PATH . 'config' . DS . 'database.php'))
+        {
+            show_error('No existe el archivo de configuración: database.php');
+        }
+        
+        include $sFilePath;
+        
+        if ( ! isset($db) || count($db) == 0)
+        {
+            show_error('El archivo de configuración database.php no contiene parámetros válidos.');
+        }
+        
+        if ($sGroup != '')
+        {
+            $sActiveGroup = $sGroup;
+        }
+        
+        if ( ! isset($sActiveGroup) || ! isset($db[$sActiveGroup]))
+        {
+            show_error('Se ha espesificado un grupo inválido para la Base de Datos.');
+        }
+        
+        $aParams = $db[$sActiveGroup];
+        
+        // Espesificó el driver a utilizar?
+        if ( ! isset($aParams['dbdriver']) || $aParams['dbdriver'] == '')
+        {
+            show_error('No se ha espesificado un Driver para la Base de Datos');
+        }
+        
+        // Cargamos la base de datos.
+        require DB_PATH . 'Database.php';
+        $oDb = new Polaris_Database($aParams);
+        
+        // Retornar objeto?
+        if ( $bReturn === true)
+        {
+            return $oDb; 
+        }
+        
+        // Inicializamos la variable, esto para prevenir errores.
+        $oObject->db = '';
+        
+        // Cargamos la Base de Datos
+        $oObject->db =& $oDb->get_instance();
     }
     
     // --------------------------------------------------------------------
@@ -291,7 +358,7 @@ class Polaris_Loader {
     {
         $sAlias = strtolower(basename($sModule));
         
-        $oObject =& getInstance();
+        $oObject =& get_instance();
         
         $oObject->{$sAlias} = $this->module->load(array($sModule => $aParams));
         

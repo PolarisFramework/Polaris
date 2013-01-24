@@ -50,7 +50,7 @@ class Polaris_Config {
             show_error('No se encuentra el archivo de configuración.');
         }
         
-        require $sConfigPath;
+        include $sConfigPath;
         
         $this->aConfig =& $config;
         
