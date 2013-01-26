@@ -42,11 +42,7 @@ class App_Controller extends Polaris_Controller {
         
         if ( ! $this->userAuth->isUser())
         {
-            //$this->layout->set_layout('mantent');
-            $this->load->setModule('core');
-            $this->layout->show('mantenimiento');
-            exit;
-            return;
+            
         }
     }
 }

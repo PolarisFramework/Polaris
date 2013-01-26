@@ -90,24 +90,7 @@ class Polaris_Loader {
         $this->object = $object;
         
         // Módulo actual
-        $this->setModule($this->router->getModule());
-    }
-    
-    // --------------------------------------------------------------------
-    
-    /**
-     * Cargar módulo en espesífico
-     * 
-     * Esto se usa principalmente para interrumpir la salida
-     * del modulo actual.
-     * 
-     * @access public
-     * @param string $module
-     * @return void
-     */
-    public function setModule($module)
-    {
-        $this->_module = $module;
+        $this->_module = $this->router->getModule();
     }
     
     // --------------------------------------------------------------------
