@@ -487,6 +487,119 @@ abstract class Polaris_Database_Driver implements Polaris_Database_Interface {
     // --------------------------------------------------------------------
     
     /**
+     * Insertar una fila. Acepta datos enviados en un array.
+     * 
+     * @access public
+     * @param string $table
+     * @param array $data
+     * @param bool $escape
+     * @return int last_insert_id
+     */
+    public function insert($table, $data = array(), $escape = true)
+    {
+        $values = '';
+        foreach($data as $val)
+        {
+            if (is_null($val))
+            {
+                $values .= 'NULL, ';
+            }
+            else
+            {
+                $values .= "'". ($escape ? $this->escape($val) : $val) . "', ";
+            }
+        }
+        $values = rtrim(trim($values), ',');
+        
+        $sql = $this->_insert($table, implode(', ', array_keys($data)), $values);
+        
+        if ($result = $this->query($sql))
+        {
+            return $this->get_last_id();
+        }
+        
+        return 0;
+    }
+    
+    // --------------------------------------------------------------------
+    
+    /**
+     * Actualizar datos.
+     * 
+     * @access public
+     * @param string $table
+     * @param array $values
+     * @param string $cond
+     * @param bool $escape
+     * @return bool
+     */
+    public function update($table, $data, $cond = null, $escape = true)
+    {
+        $sets = '';
+        foreach($data as $col => $val)
+        {
+            $cmd = '=';
+            if (is_array($val))
+            {
+                $cmd = $val[0];
+                $val = $val[1];
+            }
+            
+            $sets = "{$col} {$cmd} " . (is_null($val) ? 'NULL' : ($escape ? "'" . $this->escape($val) . "'" : $val)) . ', ';
+        }
+        $sets[strlen($sets) - 2] = ' ';
+        
+        return $this->query($this->_update($table, $sets, $cond));
+    }
+    
+    // --------------------------------------------------------------------
+    
+    /**
+     * Eliminar registro de la base de datos.
+     * 
+     * @access public
+     * @param $table
+     * @param $query
+     * @param $limit
+     * @return  bool
+     */
+    public function delete($table, $query, $limit = null)
+    {
+        if ($limit !== null)
+        {
+            $query .= 'LIMIT ' . (int) $limit;
+        }
+        
+        return $this->query("DELETE FROM {$table} WHERE " . $query);
+    }
+    
+    // --------------------------------------------------------------------
+    
+    /**
+     * Actualizar un contador.
+     * 
+     * Esta función nos facilita realizar consultas del tipo:
+     * 
+     * UPDATE table SET counter = counter (+/-) 1 WHERE field = 1;
+     * 
+     * @access public
+     * @param string $table
+     * @param string $counter Campo que vamos a actualizar.
+     * @param string $field Campo que debe coincidir para actualizar.
+     * @param int $id Valor para el campo de coincidencia.
+     * @param bool $minus Por defecto la variable se incrementa, cuando queramos disminuir debemos colocarla como true.
+     * @return void
+     */
+    public function update_counter($table, $counter, $field, $id, $minus = false)
+    {
+        $count = $this->select($counter)->from($table)->where($field . ' = ' . (int) $id)->execute('field');
+        
+        $this->update($table, array($counter => ($minus === true ? (($count <= 0 ? 0 : $count - 1)) : ($count + 1))), $field . ' = ' . (int) $id);
+    }
+    
+    // --------------------------------------------------------------------
+    
+    /**
      * Filtrar variables
      * 
      * @access public
@@ -553,4 +666,38 @@ abstract class Polaris_Database_Driver implements Polaris_Database_Interface {
         
         $this->query['join'] = preg_replace('/^(AND|OR)(.*?)/i', '', trim($this->query['join'])) . ")\n";
     }
+    
+    // --------------------------------------------------------------------
+    
+    /**
+     * Crear consulta para INSERT
+     * 
+     * @access protected
+     * @param $table
+     * @param $fields
+     * @param $values
+     * @return string SQL
+     */
+    protected function _insert($table, $fields, $values)
+    {
+		return 'INSERT INTO ' . $table . ' '.
+        	'        (' . $fields . ')'.
+            ' VALUES (' . $values . ')';
+    }
+    
+    // --------------------------------------------------------------------
+    
+    /**
+     * Crear consulta UPDATE
+     * 
+     * @access protected
+     * @param $table
+     * @param $sets
+     * @param $cond
+     * @return string SQL
+     */
+	protected function _update($table, $sets, $cond)
+	{
+		return 'UPDATE ' . $table . ' SET ' . $sets . ' WHERE ' . $cond;
+	}
 }

@@ -33,18 +33,18 @@ class Polaris_Timer {
      * 
      * @var array
      */
-    private $_aPoints = array();
+    private $points = array();
     
     /**
      * Marcar un punto
      * 
      * @access public
-     * @param string $sName Nombre del punto
+     * @param string $name Nombre del punto
      * @return void
      */
-    public function mark($sName)
+    public function mark($name)
     {
-        $this->_aPoints[$sName] = microtime();
+        $this->points[$name] = microtime();
     }
     
     // --------------------------------------------------------------------
@@ -53,32 +53,32 @@ class Polaris_Timer {
      * Calcula la diferencia de tiempo entre dos puntos marcados.
      * 
      * @access public
-     * @param string $sPoint1
-     * @param string $sPoint2
-     * @param integer $iDecimals
+     * @param string $point1
+     * @param string $point2
+     * @param integer $decimals
      * @return mixed
      */
-    public function elapsed_time($sPoint1 = '', $sPoint2 = '', $iDecimals = 3)
+    public function elapsedTime($point1 = '', $point2 = '', $decimals = 3)
     {
-        if ( $sPoint1 == '')
+        if ( $point1 == '')
         {
             return '{elapsed_time}';
         }
         
-        if ( ! isset($this->_aPoints[$sPoint1]))
+        if ( ! isset($this->points[$point1]))
         {
             return '';
         }
         
-        if ( ! isset($this->_aPoints[$sPoint2]))
+        if ( ! isset($this->points[$point2]))
         {
-            $this->_aPoints[$sPoint2] = microtime();
+            $this->points[$point2] = microtime();
         }
         
-        list($sm, $ss) = explode(' ', $this->_aPoints[$sPoint1]);
-        list($em, $es) = explode(' ', $this->_aPoints[$sPoint2]);
+        list($sm, $ss) = explode(' ', $this->points[$point1]);
+        list($em, $es) = explode(' ', $this->points[$point2]);
         
-        return number_format(($em + $es) - ($sm + $ss), $iDecimals);
+        return number_format(($em + $es) - ($sm + $ss), $decimals);
     }
     
     // --------------------------------------------------------------------
@@ -90,20 +90,20 @@ class Polaris_Timer {
      * Formatea la cantidad en KB o MB según corresponda.
      * 
      * @access public
-     * @param bool $bCalculate Determina si se calculará el consumo o retornará la variable en la plantilla
+     * @param bool $calculate Determina si se calculará el consumo o retornará la variable en la plantilla
      * @return string
      */
-    public function memory_usage($bCalculate = false)
+    public function memoryUsage($calculate = false)
     {
-        if ( ! $bCalculate)
+        if ( ! $calculate)
         {
             return '{memory_usage}';
         }
         
-        $aUnits = array('bytes', 'kb', 'mb');
+        $units = array('bytes', 'kb', 'mb');
    
-        $fBase = log(memory_get_usage() - START_MEM) / log(1024);
+        $base = log(memory_get_usage() - START_MEM) / log(1024);
         
-        return round(pow(1024, $fBase - floor($fBase)), 2) . ' ' . $aUnits[floor($fBase)];
+        return round(pow(1024, $base - floor($base)), 2) . ' ' . $units[floor($base)];
     }
 }

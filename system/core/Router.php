@@ -35,42 +35,42 @@ class Polaris_Router {
      * 
      * @var array
      */
-    private $_aRoutes = array();
+    private $_routes = array();
     
     /**
      * Módulo
      * 
      * @var string
      */
-    private $_sModule = '';
+    private $_module = '';
     
     /**
      * Clase/Controlador
      * 
      * @var string
      */
-    private $_sClass = '';
+    private $_class = '';
     
     /**
      * Método
      * 
      * @var string
      */
-    private $_sMethod = 'index';
+    private $_method = 'index';
     
     /**
      * Directorio
      * 
      * @var string
      */
-    private $_sDirectory = '';
+    private $_directory = '';
     
     /**
      * Controlador por defecto.
      * 
      * @var string
      */
-    private $_sDefaultController = '';
+    private $_defaultController = '';
     
     /**
      * Constructor
@@ -97,24 +97,24 @@ class Polaris_Router {
     {
         $route = array();
         
-        $sRoutesPath = APP_PATH . 'config' . DS . 'routes.php';
+        $filePath = APP_PATH . 'config' . DS . 'routes.php';
         
-        if ( ! file_exists($sRoutesPath))
+        if ( ! file_exists($filePath))
         {
             show_error('No se encuentra el archivo de configuración: routes.php');
         }
         
-        include $sRoutesPath;
+        include $filePath;
         
-        $this->_aRoutes =& $route;
+        $this->_routes =& $route;
         
         // Establecer el controlador por defecto, el cual será cargado cuando
         // la URI esté vacia es decir en la página principal.
-        $this->_sDefaultController = ( ! isset($this->_aRoutes['default_module_controller']) || $this->_aRoutes['default_module_controller'] == '') ? false : strtolower($this->_aRoutes['default_module_controller']);
+        $this->_defaultController = ( ! isset($this->_routes['default_module_controller']) || $this->_routes['default_module_controller'] == '') ? false : strtolower($this->_routes['default_module_controller']);
         
         $this->uri->fetchURIString();
         
-        if ($this->uri->sURIString == '')
+        if ($this->uri->uriString == '')
         {
             $this->_setDefaultController();
         }
@@ -136,28 +136,28 @@ class Polaris_Router {
      */
     private function _setDefaultController()
     {
-        if ($this->_sDefaultController === false)
+        if ($this->_defaultController === false)
         {
             show_error('No se puede determinar lo que se debe mostrar. La ruta por defecto no ha sido configurada.');
         }
         
         // Hay un método espesificado?
-        $aParts = explode('/', $this->_sDefaultController);
+        $parts = explode('/', $this->_defaultController);
         
-        if ( is_array($aParts) && count($aParts) >= 2)
+        if ( is_array($parts) && count($parts) >= 2)
         {
-            $this->setClass($aParts[1]);
+            $this->setClass($parts[1]);
             
-            if ( isset($aParts[2]))
+            if ( isset($parts[2]))
             {
-                $this->setMethod($aParts[2]);
+                $this->setMethod($parts[2]);
             }
             else
             {
                 $this->setMethod('index');
             }
             
-            $this->_setRequest($aParts);
+            $this->_setRequest($parts);
         }
     }
     
@@ -176,37 +176,37 @@ class Polaris_Router {
     private function _parseRoutes()
     {
         // Convertir el arreglo de segmentos en una cadena URI
-        $sUri = implode('/', $this->uri->aSegments);
+        $uri = implode('/', $this->uri->segments);
         
         // Existe una coincidencia total? terminamos
-        if (isset($this->_aRoutes[$sUri]))
+        if (isset($this->_routes[$uri]))
         {
-            return $this->_setRequest(explode('/', $this->_aRoutes[$sUri]));
+            return $this->_setRequest(explode('/', $this->_routes[$uri]));
         }
         
         // Recorremos nuestras rutas en busca de coincidencias.
-        foreach ( $this->_aRoutes as $sKey => $sVal)
+        foreach ( $this->_routes as $key => $val)
         {
             // Reemplazamos...
-            $sKey = str_replace(array(':any', ':num'), array('.+', '[0-9]+'), $sKey);
+            $key = str_replace(array(':any', ':num'), array('.+', '[0-9]+'), $key);
             
             // Coincide con el RegEx?
-            if ( preg_match('#^'.$sKey.'$#', $sUri))
+            if ( preg_match('#^'.$key.'$#', $uri))
             {
                 // Tenemos una variable de referencia?
-                if (strpos($sVal, '$') !== false && strpos($sKey, '(') !== false)
+                if (strpos($val, '$') !== false && strpos($key, '(') !== false)
                 {
-                    $sVal = preg_replace('#^'.$key.'$#', $sVal, $sUri);
+                    $val = preg_replace('#^'.$key.'$#', $val, $uri);
                 }
                 
-                return $this->_setRequest(explode('/', $sVal));
+                return $this->_setRequest(explode('/', $val));
             }
         }
         
         // Si llegamos hasta aquí, significa que no se encontró
         // coincidencia con alguna ruta, por tanto establecemos al
         // controlador por defecto.
-        $this->_setRequest($this->uri->aSegments);
+        $this->_setRequest($this->uri->segments);
     }
     
     // --------------------------------------------------------------------
@@ -218,30 +218,30 @@ class Polaris_Router {
      * el actual Module/Controller.
      * 
      * @access private
-     * @param array $aSegments
+     * @param array $segments
      * @return void
      */
-    private function _setRequest($aSegments)
+    private function _setRequest($segments)
     {
-        $aSegments = $this->_validateRequest($aSegments);
+        $segments = $this->_validateRequest($segments);
         
-        if ( count($aSegments) == 0)
+        if ( count($segments) == 0)
         {
             return $this->_setDefaultController();
         }
         
-        $this->setClass($aSegments[0]);
+        $this->setClass($segments[0]);
         
-        if ( isset($aSegments[1]))
+        if ( isset($segments[1]))
         {
-            $this->setMethod($aSegments[1]);
+            $this->setMethod($segments[1]);
         }
         else
         {
-            $aSegments[1] = 'index';
+            $segments[1] = 'index';
         }
         
-        //$this->uri->aRSegments = $aSegments;
+        //$this->uri->aRSegments = $segments;
     }
     
     // --------------------------------------------------------------------
@@ -251,22 +251,22 @@ class Polaris_Router {
      * del controlador solicitado.
      * 
      * @access private
-     * @param array $aSegments
+     * @param array $segments
      * @return array
      */
-    private function _validateRequest($aSegments)
+    private function _validateRequest($segments)
     {
-        if ( count($aSegments) == 0)
+        if ( count($segments) == 0)
         {
-            return $aSegments;
+            return $segments;
         }
         
-        if ( $aLocated = $this->locate($aSegments))
+        if ( $aLocated = $this->locate($segments))
         {
             return $aLocated;
         }
         
-        show_error('Página no encotrada: ' . $aSegments[0], 404);
+        show_error('Página no encotrada: ' . $segments[0], 404);
     }
     
     // --------------------------------------------------------------------
@@ -275,55 +275,55 @@ class Polaris_Router {
      * Localizar controlador válido
      * 
      * @access public
-     * @param array $aSegments
+     * @param array $segments
      * @return array
      */
-    public function locate($aSegments)
+    public function locate($segments)
     {
         $sExt = '.controller.php';
         
-        if (isset($aSegments[0]) && $aRoutes = $this->module->parseRoutes($aSegments[0], implode('/', $aSegments)))
+        if (isset($segments[0]) && $routes = $this->module->parseRoutes($segments[0], implode('/', $segments)))
         {
-            $aSegments = $aRoutes;
+            $segments = $routes;
         }
         
         // Obtener las variable desde los segmentos.
-        list($sModule, $sDirectory, $sController) = array_pad($aSegments, 3, null);
+        list($module, $directory, $controller) = array_pad($segments, 3, null);
         
         // Existe el directorio...
-        if (is_dir($sModulePath = MOD_PATH . $sModule . DS . 'controller' . DS))
+        if (is_dir($modulePath = MOD_PATH . $module . DS . 'controller' . DS))
         {
-            $this->_sModule = $sModule;
-            $this->_sDirectory = $sModulePath;
+            $this->_module = $module;
+            $this->_directory = $modulePath;
 
             // Existe un sub-controlador del módulo?
-            if ($sDirectory && is_file($sModulePath . $sDirectory . $sExt))
+            if ($directory && is_file($modulePath . $directory . $sExt))
             {
-                return array_slice($aSegments, 1);
+                return array_slice($segments, 1);
             }
             
             // Existe un sub-directorio del módulo?
-            if ($sDirectory && is_dir($sModulePath . $sDirectory . DS))
+            if ($directory && is_dir($modulePath . $directory . DS))
             {
-                $sModulePath = $sModulePath . $sDirectory . DS;
-                $this->_sDirectory .= $sDirectory . DS;
+                $modulePath = $modulePath . $directory . DS;
+                $this->_directory .= $directory . DS;
                 
                 // Existe el controlador en el sub-directorio
-                if (is_file($sModulePath . $sDirectory . $sExt))
+                if (is_file($modulePath . $directory . $sExt))
                 {
-                    return array_slice($aSegments, 1); 
+                    return array_slice($segments, 1); 
                 }
                 
                 // Existe un sub-controlador en el sub-directorio?
-                if( $sController && is_file($sModulePath . $sController . $sExt))
+                if( $controller && is_file($modulePath . $controller . $sExt))
                 {
-                    return array_slice($aSegments, 2);
+                    return array_slice($segments, 2);
                 }
             }
             
-            if (is_file($sModulePath . $sModule . $sExt))
+            if (is_file($modulePath . $module . $sExt))
             {
-                return $aSegments;
+                return $segments;
             }
         }
     }
@@ -338,7 +338,7 @@ class Polaris_Router {
      */
     public function getModule()
     {
-        return $this->_sModule;
+        return $this->_module;
     }
     
     // --------------------------------------------------------------------
@@ -351,7 +351,7 @@ class Polaris_Router {
      */
     public function getClass()
     {
-        return $this->_sClass;
+        return $this->_class;
     }
     
     // --------------------------------------------------------------------
@@ -362,12 +362,12 @@ class Polaris_Router {
      * Definimos el controlador.
      * 
      * @access public
-     * @param string $sClass
+     * @param string $class
      * @return void
      */
-    public function setClass($sClass)
+    public function setClass($class)
     {
-        $this->_sClass = str_replace(array('/', '.'), '', $sClass);
+        $this->_class = str_replace(array('/', '.'), '', $class);
     }
     
     // --------------------------------------------------------------------
@@ -380,12 +380,12 @@ class Polaris_Router {
      */
     public function getMethod()
     {
-        if ( $this->_sMethod == $this->getClass())
+        if ( $this->_method == $this->getClass())
         {
             return 'index';
         }
         
-        return $this->_sMethod;
+        return $this->_method;
     }
     
     // --------------------------------------------------------------------
@@ -394,12 +394,12 @@ class Polaris_Router {
      * Establecer el método
      * 
      * @access public
-     * @param string $sMethod
+     * @param string $method
      * @return void
      */
-    public function setMethod($sMethod)
+    public function setMethod($method)
     {
-        $this->_sMethod = $sMethod;
+        $this->_method = $method;
     }
     
     // --------------------------------------------------------------------
@@ -412,6 +412,6 @@ class Polaris_Router {
      */
     public function getDirectory()
     {
-        return $this->_sDirectory;
+        return $this->_directory;
     }
 }

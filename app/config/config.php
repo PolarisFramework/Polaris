@@ -70,3 +70,19 @@ $config['url_suffix'] = '';
 |
 */
 $config['permitted_uri_chars'] = 'a-z 0-9~%.:_\-';
+
+/*
+|--------------------------------------------------------------------------
+| Variables relacionadas con cookies
+|--------------------------------------------------------------------------
+|
+| 'cookie_domain' = Establesca .su-dominio.com para las cookies en subdominos.
+| 'cookie_path'   =  Normalmente será una barra diagonal.
+| 'cookie_prefix' = Establezca un prefijo si es necesario para evitar colisiones.
+| 'cookie_secure' = Las cookies sólo se establecerán si una conexión segura HTTPS existe.
+|
+*/
+$config['cookie_domain']	= '';
+$config['cookie_path']		= '/';
+$config['cookie_prefix']	= '';
+$config['cookie_secure']	= false;

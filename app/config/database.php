@@ -1,6 +1,6 @@
 <?php
 // Base de datos por defecto
-$sActiveGroup = 'default';
+$activeGroup = 'default';
 
 $db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'root';

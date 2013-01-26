@@ -27,32 +27,58 @@
  */
 class Polaris_Controller {
     
-    private static $_oInstance;
+    /**
+     * Instancia de la clase.
+     * 
+     * @var object
+     */
+    private static $instance;
+    
+    /**
+     * Carga automática de librerías.
+     * 
+     * @var array
+     */
+    public $autoload = array();
     
     /**
      * Constructor
+     * 
+     * @access public
      */
     public function __construct()
     {
-        self::$_oInstance =& $this;
+        self::$instance =& $this;
         
         // Asigna todos los objetos que fueron instanciados por el bootstrap
         // a objetos locales para que este se convierta en un super objeto.
-        foreach ( is_loaded() as $sKey => $sClass)
+        foreach ( is_loaded() as $key => $class)
         {
-            $this->{$sKey} =& load_class($sClass);
+            $this->{$key} =& load_class($class);
         }
         
-        // Cargador
-        $this->load =& load_class('Loader', 'core');
+        // Registramos el módulo actual.
+        $class = str_replace('_Controller', '', get_class($this));
+        load_class('Module', 'core')->addClass($class, $this);
         
-        $this->load->init();
+        // Copiamos una instancia de Layout
+        $this->layout = clone load_class('Layout', 'core');
+        $this->layout->init($this);
+        
+        // Copiamos una instancia de Loader e inicializamos();
+        $this->load = clone load_class('Loader', 'core');
+        $this->load->init($this);
+        
+        $this->load->_autoload($this->autoload);
     }
     
-    public static function &getInstance()
+    // --------------------------------------------------------------------
+    
+    /**
+     * Retornar Instancia del super controlador
+     */
+    public static function &get_instance()
     {
-        return self::$_oInstance;
+        return self::$instance;
     }
 }
-
-new Polaris_Controller;

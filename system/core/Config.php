@@ -32,7 +32,7 @@ class Polaris_Config {
      * 
      * @var array
      */
-    public $aConfig = array();
+    public $config = array();
     
     /**
      * Constructor
@@ -43,31 +43,31 @@ class Polaris_Config {
     {
         $config = array();
         
-        $sConfigPath = APP_PATH . 'config' . DS . 'config.php';
+        $filePath = APP_PATH . 'config' . DS . 'config.php';
         
-        if ( ! file_exists($sConfigPath))
+        if ( ! file_exists($filePath))
         {
             show_error('No se encuentra el archivo de configuración.');
         }
         
-        include $sConfigPath;
+        include $filePath;
         
-        $this->aConfig =& $config;
+        $this->config =& $config;
         
-        if ($this->aConfig['base_url'] == '')
+        if ($this->config['base_url'] == '')
         {
             if (isset($_SERVER['HTTP_HOST']))
             {
-                $sBaseUrl = (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') ? 'https' : 'http';
-                $sBaseUrl .= '://' . $_SERVER['HTTP_HOST'];
-                $sBaseUrl .= str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
+                $baseUrl = (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') ? 'https' : 'http';
+                $baseUrl .= '://' . $_SERVER['HTTP_HOST'];
+                $baseUrl .= str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
             }
             else
             {
-                $sBaseUrl = 'http://localhost/';
+                $baseUrl = 'http://localhost/';
             }
             
-            $this->set('base_url', $sBaseUrl);
+            $this->set('base_url', $baseUrl);
         }
     }
     
@@ -77,34 +77,34 @@ class Polaris_Config {
      * Cargar un parámetro de configuración.
      * 
      * @access public
-     * @param string $sName Nombre del parámetro
-     * @param string $sIndex Nombre del index (Para arreglos)
+     * @param string $name Nombre del parámetro
+     * @param string $index Nombre del index (Para arreglos)
      * @return mixed
      */
-    public function get($sName, $sIndex = '')
+    public function get($name, $index = '')
     {
-        if ( $sIndex == '')
+        if ( $index == '')
         {
-            if ( ! isset($this->aConfig[$sName]))
+            if ( ! isset($this->config[$name]))
             {
                 return false;
             }
             
-            return $this->aConfig[$sName];
+            return $this->config[$name];
         }
         else
         {
-            if ( ! isset($this->aConfig[$sIndex]))
+            if ( ! isset($this->config[$index]))
             {
                 return false;
             }
             
-            if ( ! isset($this->aConfig[$sIndex][$sName]))
+            if ( ! isset($this->config[$index][$name]))
             {
                 return false;
             }
             
-            return $this->aConfig[$sIndex][$sName];
+            return $this->config[$index][$name];
         }
     }
     
@@ -114,12 +114,12 @@ class Polaris_Config {
      * Añadir un parámetro de configuración.
      * 
      * @access public
-     * @param string $sName
-     * @param string $sValue
+     * @param string $name
+     * @param string $value
      * @return void
      */
-    public function set($sName, $sValue)
+    public function set($name, $value)
     {
-        $this->aConfig[$sName] = $sValue;
+        $this->config[$name] = $value;
     }
 }

@@ -33,14 +33,14 @@ class Polaris_URI {
      * 
      * @var string
      */
-    public $sURIString = '';
+    public $uriString = '';
     
     /**
      * Segmentos
      * 
      * @var array
      */
-    public $aSegments = array();
+    public $segments = array();
     
     /**
      * Constructor
@@ -60,9 +60,9 @@ class Polaris_URI {
      */
     public function fetchURIString()
     {
-        if ($sURI = $this->_detectURI())
+        if ($uri = $this->_detectURI())
         {
-            $this->setURIString($sURI);
+            $this->setURIString($uri);
         }
     }
     
@@ -76,20 +76,20 @@ class Polaris_URI {
      */
     private function _detectURI()
     {
-        $sUri = $_SERVER['REQUEST_URI'];
+        $uri = $_SERVER['REQUEST_URI'];
         
         // Solo queremos lo que está antes del '?'
-        $aParts = preg_split('#\?#i', $sUri, 2);
-        $sUri = $aParts[0];
+        $parts = preg_split('#\?#i', $uri, 2);
+        $uri = $parts[0];
         
         // Página principal?
-        if ($sUri == '/' || empty($sUri))
+        if ($uri == '/' || empty($uri))
         {
             return '/';
         }
         
         // Limpiamos...
-        return str_replace(array('//', '../'), '/', trim($sUri, '/'));
+        return str_replace(array('//', '../'), '/', trim($uri, '/'));
     }
     
     // --------------------------------------------------------------------
@@ -106,8 +106,8 @@ class Polaris_URI {
      */
     public function reindexSegments()
     {
-        array_unshift($this->aSegments, NULL);
-        unset($this->aSegments);
+        array_unshift($this->segments, NULL);
+        unset($this->segments);
     }
     
     // --------------------------------------------------------------------
@@ -120,13 +120,13 @@ class Polaris_URI {
      */
     public function explodeSegments()
     {
-        foreach ( explode('/', preg_replace('|/*(.+?)/*$|', '\\1', $this->sURIString)) as $sVal)
+        foreach ( explode('/', preg_replace('|/*(.+?)/*$|', '\\1', $this->uriString)) as $val)
         {
-            $sVal = trim($this->_filterURI($sVal));
+            $val = trim($this->_filterURI($val));
             
-            if ( $sVal != '')
+            if ( $val != '')
             {
-                $this->aSegments[] = $sVal;
+                $this->segments[] = $val;
             }
         }
     }
@@ -137,20 +137,20 @@ class Polaris_URI {
      * Filtrar un segmento recibido en URI.
      * 
      * @access private
-     * @param string $sVal
+     * @param string $val
      * @return string
      */
-    private function _filterUri($sVal)
+    private function _filterUri($val)
     {
-        if ( $sVal != '' && $this->config->get('permitted_uri_chars') != '')
+        if ( $val != '' && $this->config->get('permitted_uri_chars') != '')
         {
-            if ( ! preg_match('|^['.str_replace(array('\\-', '\-'), '-', preg_quote($this->config->get('permitted_uri_chars'), '-')).']+$|i', $sVal))
+            if ( ! preg_match('|^['.str_replace(array('\\-', '\-'), '-', preg_quote($this->config->get('permitted_uri_chars'), '-')).']+$|i', $val))
             {
                 show_error('El URI enviado contiene caracteres no permitidos.', 400);
             }
         }
         
-        return $sVal;
+        return $val;
     }
     
     // --------------------------------------------------------------------
@@ -159,11 +159,11 @@ class Polaris_URI {
      * Set URI String
      * 
      * @access private
-     * @param string $sUri
+     * @param string $uri
      * @return void
      */
-    public function setUriString($sUri)
+    public function setUriString($uri)
     {
-        $this->sURIString = ($sUri == '/') ? '' : $sUri;
+        $this->uriString = ($uri == '/') ? '' : $uri;
     }
 }

@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------------
 
 /**
- * App Controller
+ * App
  * 
  * @package     Polaris
  * @subpackage  Core
@@ -23,38 +23,30 @@
  * @author      Ivan Molina Pavana <montemolina@live.com>
  * @link        http://polarisframework.com/docs/.html
  */
-class App_Controller {
+class App_Controller extends Polaris_Controller {
     
-    /**
-     * Constructor
-     * 
-     * @access public
-     */
-    public function __construct()
+    function __construct()
     {
-        $sClass = str_replace('_Controller', '', get_class($this));
-        load_class('Module', 'core')->addClass($sClass, $this);
+        // Cargamos el constructor principal
+        parent::__construct();
         
-        // Copiamos una instancia de Layout
-        $this->layout = clone load_class('Layout', 'core');
-        $this->layout->init($this);
+        // Cargamos las librerías globales
+        $this->load->_autoload(
+            array(
+                //'library' => array('session'),
+            )
+        );
         
-        // Copiamos una instancia de Loader e inicializamos();
-        $this->load = clone load_class('Loader', 'core');
-        $this->load->init($this);
-    }
-    
-    /**
-     * __get
-     * 
-     * @access public
-     * @param string $sName
-     * @return mixed
-     */
-    public function __get($sName)
-    {
-        $oObject =& get_instance();
+        // Comprobamos mantenimiento              
+        $this->load->model('user/auth');                
         
-        return $oObject->{$sName};
+        if ( ! $this->userAuth->isUser())
+        {
+            //$this->layout->set_layout('mantent');
+            $this->load->setModule('core');
+            $this->layout->show('mantenimiento');
+            exit;
+            return;
+        }
     }
 }

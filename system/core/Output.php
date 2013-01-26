@@ -33,7 +33,7 @@ class Polaris_Output {
      * 
      * @var string
      */
-    private $_sOutputString = '';
+    private $outputString = '';
     
     // --------------------------------------------------------------------
     
@@ -45,7 +45,7 @@ class Polaris_Output {
      */
     public function getOutput()
     {
-        return $this->_sOutputString;
+        return $this->outputString;
     }
     
     // --------------------------------------------------------------------
@@ -54,12 +54,12 @@ class Polaris_Output {
      * Establecer una nueva salida
      * 
      * @access public
-     * @param string $sOutput
+     * @param string $output
      * @return Output
      */
-    public function setOutput($sOutput)
+    public function setOutput($output)
     {
-        $this->_sOutputString = $sOutput;
+        $this->outputString = $output;
         
         return $this;
     }
@@ -70,12 +70,12 @@ class Polaris_Output {
      * Agregar contenido a la salida actual
      * 
      * @access public
-     * @param string $sOutput
+     * @param string $output
      * @return void
      */
-    public function appendOutput($sOutput)
+    public function appendOutput($output)
     {
-        $this->_sOutputString .= $sOutput;
+        $this->outputString .= $output;
         
         return $this;
     }
@@ -88,29 +88,29 @@ class Polaris_Output {
      * Esta función finaliza la salida de datos al navegador. 
      * 
      * @access public
-     * @param string $sOutput
+     * @param string $output
      * @return mixed
      */
-    public function display($sOutput = '')
+    public function display($output = '')
     {
         //
-        global $oTimer;
+        global $timer;
         
         // Datos de salida
-        if ( $sOutput == '')
+        if ( $output == '')
         {
-            $sOutput =& $this->_sOutputString;
+            $output =& $this->outputString;
         }
         
         // Debug Time/Memory
-        $sElapsed = $oTimer->elapsed_time('total_execution_time_start', 'total_execution_time_end');
-        $sMemory = $oTimer->memory_usage(true);
+        $elapsed = $timer->elapsedTime('total_execution_time_start', 'total_execution_time_end');
+        $memory = $timer->memoryUsage(true);
         
-        $sOutput = str_replace('{elapsed_time}', $sElapsed, $sOutput);
-        $sOutput = str_replace('{memory_usage}', $sMemory, $sOutput);
+        $output = str_replace('{elapsed_time}', $elapsed, $output);
+        $output = str_replace('{memory_usage}', $memory, $output);
         
         // Mostramos la salida
-        echo $sOutput;
+        echo $output;
         
         return true;
     }

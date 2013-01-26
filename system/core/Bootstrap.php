@@ -72,37 +72,44 @@
  *  Crea una instancia de la clase Timer
  * ---------------------------------------------------------------
  */
-    $oTimer =& load_class('Timer', 'core');
-    $oTimer->mark('total_execution_time_start');
+    $timer =& load_class('Timer', 'core');
+    $timer->mark('total_execution_time_start');
     
 /*
  * ---------------------------------------------------------------
  *  Crea una instancia de la clase Config
  * ---------------------------------------------------------------
  */
-    $oConfig =& load_class('Config', 'core');
+    $config =& load_class('Config', 'core');
     
 /*
  * ---------------------------------------------------------------
  *  Crea una instancia de la clase URI
  * ---------------------------------------------------------------
  */
-    $oUri =& load_class('URI', 'core');
+    $uri =& load_class('URI', 'core');
     
 /*
  * ---------------------------------------------------------------
  *  Crea una instancia del Router y analiza la ruta.
  * ---------------------------------------------------------------
  */
-    $oRouter =& load_class('Router', 'core');
-    $oRouter->setRouting();
+    $router =& load_class('Router', 'core');
+    $router->setRouting();
     
 /*
  * ---------------------------------------------------------------
  *  Crea una instancia de la clase Output
  * ---------------------------------------------------------------
  */
-    $oOutput =& load_class('Output', 'core');
+    $output =& load_class('Output', 'core');
+    
+/*
+ * ---------------------------------------------------------------
+ *  Crea una instancia de la clase Request
+ * ---------------------------------------------------------------
+ */
+    $request =& load_class('Request', 'core');
     
 /*
  * ---------------------------------------------------------------
@@ -110,23 +117,23 @@
  * ---------------------------------------------------------------
  */
     // Cargamos el controlador base
-    require CORE_PATH . 'App.php';
     require CORE_PATH . 'Controller.php';
+    require CORE_PATH . 'App.php';
     
     function &get_instance()
     {
-        return Polaris_Controller::getInstance();
+        return Polaris_Controller::get_instance();
     }
 
     // Cargar el controlador local
     // Nota: El router automáticamente valida el directorio del controlador usando Router->_validateRequest().
     // Si al incluir el archivo hay un fallo, entonces el controlador por defecto en routes.php no está resolviendo algo válido.
-    if ( !file_exists($oRouter->getDirectory() . $oRouter->getClass() . '.controller.php'))
+    if ( !file_exists($router->getDirectory() . $router->getClass() . '.controller.php'))
     {
         show_error('No se puede cargar el controlador predeterminado. Por favor, asegúrese de que el controlador especificado en el archivo routes.php es válido.');
     }
     
-    require $oRouter->getDirectory() . $oRouter->getClass() . '.controller.php';
+    require $router->getDirectory() . $router->getClass() . '.controller.php';
     
 /*
  * ---------------------------------------------------------------
@@ -134,18 +141,18 @@
  * ---------------------------------------------------------------
  */
     // Módulo y clase solicitados.
-    $sModule = $oRouter->getModule();
-    $sClass = $oRouter->getClass();
+    $module = $router->getModule();
+    $class = $router->getClass();
     
     // Todos los métodos públicos deben llevar el prefijo action_ 
-    $sMethod = 'action_' . $oRouter->getMethod();
+    $method = 'action_' . $router->getMethod();
     
     // Creamos el nombre completo de nuestro controlador.
-    $sClassName = ucfirst($sModule) . '_' . ucfirst($sClass) . '_Controller';
+    $name = ucfirst($module) . '_' . ucfirst($class) . '_Controller';
     
-    if ( !class_exists($sClassName))
+    if ( !class_exists($name))
     {
-        show_error('Página no encontrada: ' . $sModule . '/' . $sClass, 404);
+        show_error('Página no encontrada: ' . $module . '/' . $class, 404);
     }
     
 /*
@@ -153,7 +160,7 @@
  *  Crea una instancia del controlador solicitado.
  * ---------------------------------------------------------------
  */
-    $oController = new $sClassName();
+    $controller = new $name();
     
 /*
  * ---------------------------------------------------------------
@@ -162,18 +169,28 @@
  */
  
     // Verificamos que exista el método.
-    if ( ! in_array($sMethod, array_map('strtolower', get_class_methods($oController))))
+    if ( ! in_array($method, array_map('strtolower', get_class_methods($controller))))
     {
-        show_error('Página no encontrada: ' . $sModule . '/' . $sClass, 404);
+        show_error('Página no encontrada: ' . $module . '/' . $class, 404);
     }
     
     // Llamamos al método solicitado.
     // Cualquier parámetro enviado después de class/method será enviado como parámetro
-    call_user_func_array(array(&$oController, $sMethod), array_slice($oUri->aSegments, 2));
+    call_user_func_array(array(&$controller, $method), array_slice($uri->segments, 2));
     
 /*
  * ---------------------------------------------------------------
  *  Enviar la salida final al navegador.
  * ---------------------------------------------------------------
  */
-    $oOutput->display();
+    $output->display();
+
+/*
+ * ---------------------------------------------------------------
+ *  Cerramos la conexión a la DB si existe
+ * ---------------------------------------------------------------
+ */
+    if (class_exists('Polaris_Database'))
+    {
+        $controller->db->close();
+    }

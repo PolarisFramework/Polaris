@@ -28,72 +28,63 @@
 class Polaris_Layout {
     
     /**
-     * Configuración
-     * 
-     * @var array
-     */
-    private $_aConfig = array();
-    
-    /**
      * Layout
      * 
      * @var string
      */
-    private $layout = 'default';
+    private $_layout = 'default';
     
     /**
      * Título de la página.
      * 
      * @var string
      */
-    private $title = array();
+    private $_title = array();
     
     /**
      * Meta tags
      * 
      * @var array
      */
-    private $meta = array();
+    private $_meta = array();
     
     /**
      * CSS
      * 
      * @var array
      */
-    private $css = array();
+    private $_css = array();
     
     /**
      * Javascript
      * 
      * @var array
      */
-    private $js = array();
+    private $_js = array();
     
     /**
      * Constructor
      */
-    public function init($oController = null)
+    public function init($object = null)
     {
-        if (is_a($oController, 'App_Controller'))
-        {
-            // Referencia al controlador
-            $this->controller = $oController;
-        }
+        // Referencia al Super Controlador
+        $this->object = $object;
         
+        // Configuraciones
         $layout = array();
+        $layoutPath = APP_PATH . 'config' . DS . 'layout.php';
         
-        $sLayoutPath = APP_PATH . 'config' . DS . 'layout.php';
-        
-        if ( ! file_exists($sLayoutPath))
+        if ( ! file_exists($layoutPath))
         {
             show_error('No se encuentra el archivo de configuración: layout.php');
         }
         
-        include $sLayoutPath;
+        include $layoutPath;
         
-        foreach ( array('layout', 'css', 'js') as $sKey)
+        // Asignamos config a variables de la clase.
+        foreach ( array('_layout', '_css', '_js') as $key)
         {
-            $this->{$sKey} = $layout[$sKey];
+            $this->{$key} = $layout[substr($key, 1)];
         }
     }
     
@@ -106,14 +97,12 @@ class Polaris_Layout {
      * del controlador base.
      * 
      * @access public
-     * @param string $sName
+     * @param string $name
      * @return object
      */
-    public function __get($sName)
+    public function __get($name)
     {
-        $oObject =& get_instance();
-        
-        return (isset($this->controller->{$sName})) ? $this->controller->{$sName} : $oObject->{$sName};
+        return (isset($this->object->{$name})) ? $this->object->{$name} : null;
     }
     
     // --------------------------------------------------------------------
@@ -122,12 +111,12 @@ class Polaris_Layout {
      * Establecer un layout
      * 
      * @access public
-     * @param string $sLayout
+     * @param string $layout
      * @return Layout
      */
-    public function set_layout($sLayout)
+    public function set_layout($layout)
     {
-        $this->layout = $sLayout;
+        $this->_layout = $layout;
         
         return $this;
     }
@@ -138,15 +127,15 @@ class Polaris_Layout {
      * Agregar titulo
      * 
      * @access public
-     * @param string $sTitle
+     * @param string $title
      * @return Layout
      */
-    public function title($sTitle)
+    public function title($title)
     {
-        $this->title[] = $sTitle;
+        $this->_title[] = $title;
         
         $this->meta('og:site_name', $this->config->get('site_title'));
-        $this->meta('og:title', $sTitle);
+        $this->meta('og:title', $title);
         
         return $this; 
     }
@@ -157,31 +146,31 @@ class Polaris_Layout {
      * Metadatos
      * 
      * @access public
-     * @param array $mMeta
-     * @param string $sValue
+     * @param array $meta
+     * @param string $value
      * @return Layout
      */
-    public function meta($mMeta, $sValue = null)
+    public function meta($meta, $value = null)
     {
-        if ( ! is_array($mMeta))
+        if ( ! is_array($meta))
         {
-            $mMeta = array($mMeta => $sValue);
+            $meta = array($meta => $value);
         }
         
-        foreach ($mMeta as $sKey => $sValue)
+        foreach ($meta as $key => $value)
         {
-            if ($sKey == 'description')
+            if ($key == 'description')
             {
-                $this->meta['og:description'] = $sValue;
+                $this->_meta['og:description'] = $value;
             }
             
-            if ( isset($this->meta[$sKey]))
+            if ( isset($this->_meta[$key]))
             {
-                $this->meta[$sKey] .= ($sKey == 'keywords' ? ', ' : ' ') . $sValue;
+                $this->_meta[$key] .= ($key == 'keywords' ? ', ' : ' ') . $value;
             }
             else
             {
-                $this->meta[$sKey] = $sValue;
+                $this->_meta[$key] = $value;
             }
         }
         
@@ -194,19 +183,19 @@ class Polaris_Layout {
      * Agregar archivos CSS
      * 
      * @access public
-     * @param array $aData Un arreglo de archivos o un solo archivo.
+     * @param array $data Un arreglo de archivos o un solo archivo.
      * @return Layout
      */
-    public function css($aData = array())
+    public function css($data = array())
     {
-        if ( ! is_array($aData))
+        if ( ! is_array($data))
         {
-            $aData = array($aData);
+            $data = array($data);
         }
         
-        foreach ($aData as $css)
+        foreach ($data as $css)
         {
-            $this->css[] = $css;
+            $this->_css[] = $css;
         }
         
         return $this;
@@ -218,19 +207,19 @@ class Polaris_Layout {
      * Agregar archivos JS
      * 
      * @access public
-     * @param array $aData Un arreglo de archivos o un solo archivo.
+     * @param array $data Un arreglo de archivos o un solo archivo.
      * @return Layout
      */
-    public function js($aData = array())
+    public function js($data = array())
     {
-        if ( ! is_array($aData))
+        if ( ! is_array($data))
         {
-            $aData = array($aData);
+            $data = array($data);
         }
         
-        foreach ($aData as $js)
+        foreach ($data as $js)
         {
-            $this->js[] = $js;
+            $this->_js[] = $js;
         }
         
         return $this;
@@ -242,26 +231,26 @@ class Polaris_Layout {
      * Mostrar Layout
      * 
      * @access public
-     * @param string $sView
-     * @param array $aData
+     * @param string $view
+     * @param array $data
      * @return void
      */
-    public function show($sView, $aData = array())
+    public function show($view, $data = array())
     {
         // Ruta del layout
-        $sLayoutPath = APP_PATH . 'layout' . DS . $this->layout . '.php';
+        $layoutPath = APP_PATH . 'layout' . DS . $this->_layout . '.php';
         
         // Contenido del layout
-        $sOutput = file_get_contents($sLayoutPath);
+        $output = file_get_contents($layoutPath);
         
         // Cargamos el contenido de la vista.
-        $sContent = $this->load->view($sView, $aData, true);
+        $content = $this->load->view($view, $data, true);
         
         // Analizamos
-        $sOutput = $this->_parse($sOutput, $sContent);
+        $output = $this->_parse($output, $content);
         
         // Agregamos a la salida.
-        $this->output->appendOutput($sOutput);
+        $this->output->appendOutput($output);
     }
     
     // --------------------------------------------------------------------
@@ -270,23 +259,23 @@ class Polaris_Layout {
      * Analizar el contenido
      * 
      * @access private
-     * @param string $sLayout
-     * @param string $sContent
+     * @param string $layout
+     * @param string $content
      * @return string
      */
-    private function _parse($sLayout, $sContent)
+    private function _parse($layout, $content)
     {
-        $sLayout = str_replace('{content}', $sContent, $sLayout);
+        $layout = str_replace('{content}', $content, $layout);
         
-        $sLayout = str_replace('{title}', $this->_getTitle(), $sLayout);
+        $layout = str_replace('{title}', $this->_getTitle(), $layout);
         
-        $sLayout = str_replace('{meta}', $this->_getMeta(), $sLayout);
+        $layout = str_replace('{meta}', $this->_getMeta(), $layout);
         
-        $sLayout = str_replace('{style}', $this->_getStyles(), $sLayout);
+        $layout = str_replace('{style}', $this->_getStyles(), $layout);
         
-        $sLayout = str_replace('{script}', $this->_getScripts(), $sLayout);
+        $layout = str_replace('{script}', $this->_getScripts(), $layout);
         
-        return $sLayout;
+        return $layout;
     }
     
     
@@ -300,15 +289,15 @@ class Polaris_Layout {
      */
     private function _getTitle()
     {
-        $sTitle = '';        
-        foreach ($this->title as $title)
+        $titles = '';        
+        foreach ($this->_title as $title)
         {
-            $sTitle .= $title . ' ' . $this->config->get('site_title_delim') . ' ';
+            $titles .= $title . ' ' . $this->config->get('site_title_delim') . ' ';
         }
                 
-        $sTitle .= $this->config->get('site_title');
+        $titles .= $this->config->get('site_title');
                 
-        return $sTitle;
+        return $titles;
     }
     
     // --------------------------------------------------------------------
@@ -323,13 +312,13 @@ class Polaris_Layout {
      */
     private function _getMeta()
     {
-        $sMeta = '';
-        foreach ($this->meta as $meta => $value)
+        $metas = '';
+        foreach ($this->_meta as $name => $value)
         {
-            $sMeta .= "\n\t" . '<meta property="' . $meta . '" content="' . $value . '" />';
+            $metas .= "\n\t" . '<meta property="' . $name . '" content="' . $value . '" />';
         }
         
-        return $sMeta;
+        return $metas;
     }
     
     // --------------------------------------------------------------------
@@ -342,13 +331,13 @@ class Polaris_Layout {
      */
     private function _getStyles()
     {
-        $sStyles = '';
-        foreach ($this->css as $css)
+        $styles = '';
+        foreach ($this->_css as $css)
         {
-            $sStyles .= "\n\t" . '<link href="'. $this->config->get('url_static_css') . $css .'" rel="stylesheet">';
+            $styles .= "\n\t" . '<link href="'. $this->config->get('url_static_css') . $css .'" rel="stylesheet">';
         }
         
-        return $sStyles;
+        return $styles;
     }
     
     // --------------------------------------------------------------------
@@ -361,12 +350,12 @@ class Polaris_Layout {
      */
     private function _getScripts()
     {
-        $sScripts = '';
-        foreach ($this->js as $js)
+        $scripts = '';
+        foreach ($this->_js as $js)
         {
-            $sScripts .= "\n\t" . '<script src="'. $this->config->get('url_static_css') . $js .'" type="text/javascript"></script>';
+            $scripts .= "\n\t" . '<script src="'. $this->config->get('url_static_js') . $js .'" type="text/javascript"></script>';
         }
         
-        return $sScripts;
+        return $scripts;
     }
 }

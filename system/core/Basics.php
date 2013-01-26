@@ -32,32 +32,32 @@
  * Cargar una clase/librería
  * 
  * @access public
- * @param string $sClass
- * @param string $sDir
- * @param string $sPrefix
+ * @param string $class
+ * @param string $dir
+ * @param string $prefix
  * @return object
  */
-function &load_class($sClass, $sDir = 'library', $sPrefix = 'Polaris_')
+function &load_class($class, $dir = 'library', $prefix = 'Polaris_')
 {
-    static $_aClasses = array();
+    static $_classes = array();
     
-    if ( isset($_aClasses[$sClass]))
+    if ( isset($_classes[$class]))
     {
-        return $_aClasses[$sClass];
+        return $_classes[$class];
     }
     
-    $sClassName = false;
+    $name = false;
     
-    foreach (array(APP_PATH, SYS_PATH) as $sPath)
+    foreach (array(APP_PATH, SYS_PATH) as $path)
     {
-        if ( file_exists($sPath . $sDir . DS . $sClass . '.php'))
+        if ( file_exists($path . $dir . DS . $class . '.php'))
         {
-            $sClassName = $sPrefix . $sClass;
+            $name = $prefix . $class;
             
             // Si no se ha cargado la clase...
-            if ( class_exists($sClassName) === false)
+            if ( class_exists($name) === false)
             {
-                require $sPath . $sDir . DS . $sClass . '.php';
+                require $path . $dir . DS . $class . '.php';
             }
             
             break;
@@ -65,16 +65,16 @@ function &load_class($sClass, $sDir = 'library', $sPrefix = 'Polaris_')
     }
     
     // No encontramos la clase?
-    if ( $sClassName === false)
+    if ( $name === false)
     {
-        show_error('No se puede encontrar la clase especificada:' . $sClass );
+        show_error('No se puede encontrar la clase especificada:' . $class );
     }
     
-    is_loaded($sClass);
+    is_loaded($class);
     
-    $_aClasses[$sClass] = new $sClassName();
+    $_classes[$class] = new $name();
     
-    return $_aClasses[$sClass];
+    return $_classes[$class];
 }
 
 // ------------------------------------------------------------------------
@@ -83,19 +83,19 @@ function &load_class($sClass, $sDir = 'library', $sPrefix = 'Polaris_')
  * Realiza un seguimiento de los objetos cargados.
  * 
  * @access public
- * @param string $sClass
+ * @param string $class
  * @return array
  */
-function &is_loaded($sClass = '')
+function &is_loaded($class = '')
 {
-    static $_aLoaded = array();
+    static $_isLoaded = array();
     
-    if ( $sClass != '')
+    if ( $class != '')
     {
-        $_aLoaded[strtolower($sClass)] = $sClass;
+        $_isLoaded[strtolower($class)] = $class;
     }
     
-    return $_aLoaded;
+    return $_isLoaded;
 }
 
 // ------------------------------------------------------------------------
@@ -105,12 +105,12 @@ function &is_loaded($sClass = '')
  * 
  * Función temporal
  * 
- * @param string $sMessage
- * @param integer $nCode
+ * @param string $message
+ * @param integer $code
  * @return void
  */
-function show_error($sMessage, $nCode = 500)
+function show_error($message, $code = 500)
 {
-    echo utf8_decode($sMessage) . ' - ' . $nCode;
+    echo utf8_decode($message) . ' - ' . $code;
     exit;
 }

@@ -1,6 +1,6 @@
 <?php
 
-class User_User_Controller extends App_Controller {
+class User_User_Controller extends Polaris_Controller {
     
     public function action_index($sVar = '')
     {

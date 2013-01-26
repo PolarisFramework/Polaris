@@ -140,6 +140,32 @@ class Polaris_Database_Driver_Mysql extends Polaris_Database_Driver {
     // --------------------------------------------------------------------
     
     /**
+     * 
+     * 
+     * @access public
+     * @return int
+     */
+    public function get_last_id()
+    {
+        return @mysql_insert_id($this->conn_id);
+    }
+    
+    // --------------------------------------------------------------------
+    
+    /**
+     * Cerrar conexión
+     * 
+     * @access public
+     * @return void
+     */
+    public function close()
+    {
+        return @mysql_close($this->conn_id);
+    }
+    
+    // --------------------------------------------------------------------
+    
+    /**
      * Devuelve exactamente una fila como un array. Si existe un número de filas
      * que satisfacen la condición, entonces el primero será devuelto.
      * 

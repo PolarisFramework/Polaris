@@ -32,14 +32,14 @@ class Polaris_Module {
      * 
      * @var array
      */
-    private $_aRoutes = array();
+    private $routes = array();
     
     /**
      * Registro de módulos
      * 
      * @var array
      */
-    private $_aRegistry = array();
+    private $registry = array();
     
     // --------------------------------------------------------------------
     
@@ -50,35 +50,35 @@ class Polaris_Module {
      * de un módulo, el resultado lo almacenará en buffer y lo devolverá
      * 
      * @access public
-     * @param string $sModule
+     * @param string $module
      * @return string
      */
-    public function run($sModule)
+    public function run($module)
     {
-        $sMethod = 'index';
+        $method = 'index';
         
-        if (($nLastSlash = strrpos($sModule, '/')) !== false)
+        if (($lastSlash = strrpos($module, '/')) !== false)
         {
-            $sMethod = substr($sModule, $nLastSlash + 1);
-            $sModule = substr($sModule, 0, $nLastSlash);
+            $method = substr($module, $lastSlash + 1);
+            $module = substr($module, 0, $lastSlash);
         }
         
-        if ($oClass = $this->load($sModule))
+        if ($class = $this->load($module))
         {
-            if (method_exists($oClass, 'action_' . $sMethod))
+            if (method_exists($class, 'action_' . $method))
             {
                 // Buffer
                 ob_start();
                 
                 // Argumentos que serán enviados.
-                $aArgs = func_get_args();
+                $args = func_get_args();
                 
                 // Procedemos a ejecutar el módulo.
-                $mResult = call_user_func_array(array($oClass, 'action_' . $sMethod), array_slice($aArgs, 1));
-                $sBuffer = ob_get_clean();
+                $result = call_user_func_array(array($class, 'action_' . $method), array_slice($args, 1));
+                $buffer = ob_get_clean();
                 
                 // Retornamos
-                return ($mResult !== null) ? $mResult : $sBuffer;
+                return ($result !== null) ? $result : $buffer;
             }
         }
     }
@@ -89,47 +89,46 @@ class Polaris_Module {
      * Cargar un controlador de un módulo
      * 
      * @access public
-     * @param string $sModule Nombre del modelo. Podemos enviar un arreglo donde el primer parámetro será el nombre y el segundo los parámetros para el controlador. 
+     * @param string $module Nombre del modelo. Podemos enviar un arreglo donde el primer parámetro será el nombre y el segundo los parámetros para el controlador. 
      * @return object
      */
-    public function load($sModule)
+    public function load($module)
     {
-        $aParams = null;
-        
-        if (is_array($sModule))
+        $params = null;
+        if (is_array($module))
         {
-            list($sModule, $aParams) = each($sModule);
+            list($module, $params) = each($module);
         }
         
         //
-        list($sModule, $sClass) = array_pad(explode('/', $sModule), 2, null);
-        $sAlias = ($sClass != null) ? $sModule . '_' . $sClass : $sModule . '_' . $sModule;
+        list($module, $class) = array_pad(explode('/', $module), 2, null);
+        $alias = ($class != null) ? $module . '_' . $class : $module . '_' . $module;
         
         // Crear y retornar el controlador solicitado
-        if ( ! isset($this->_aRegistry[$sAlias]))
+        if ( ! isset($this->registry[$alias]))
         {
             // Buscamos el controlador
-            list($sClass) = loadClass('Router', 'core')->locate(array($sModule, $sClass));
-            
+            list($class) = load_class('Router', 'core')->locate(array($module, $class));
+                        
             // No existe el controlador...
-            if (empty($sClass))
+            if (empty($class))
                 return;
                 
             // Nombre del controlador
-            $sController = ucfirst($sModule) . '_' . ucfirst($sClass) . '_Controller';
+            $controller = ucfirst($module) . '_' . ucfirst($class) . '_Controller';
             
             // Si la clase existe es porque el objeto tambien...
-            if ( class_exists($sController, false))
+            if ( class_exists($controller, false))
                 return;   
             
-            $sPath = loadClass('Router')->getDirectory();
-            $this->loadFile($sClass. '.controller', $sPath);
+            $path = load_class('Router', 'core')->getDirectory();
+            $this->loadFile($class. '.controller', $path);
                                           
             // Crear y registrar el módulo
-            $this->_aRegistry[$sAlias] = new $sController($aParams);
+            $this->registry[$alias] = new $controller($params);
         }
         
-        return $this->_aRegistry[$sAlias];
+        return $this->registry[$alias];
     }
     
     // --------------------------------------------------------------------
@@ -138,41 +137,41 @@ class Polaris_Module {
      * Analizar las rutas de un módulo.
      * 
      * @access public
-     * @param string $sModule
-     * @param string $sURI
+     * @param string $module
+     * @param string $uri
      * @return array
      */
-    public function parseRoutes($sModule, $sURI = '')
+    public function parseRoutes($module, $uri = '')
     {
         // Cargamos el archivo de las rutas.
-        if ( ! isset($this->_aRoutes[$sModule]))
+        if ( ! isset($this->routes[$module]))
         {
             // Existe?
-            if((list($sPath) = $this->find('routes', $sModule, 'config/')) && $sPath)
+            if((list($path) = $this->find('routes', $module, 'config/')) && $path)
             {
-                $this->_aRoutes[$sModule] = $this->loadFile('routes', $sPath, 'route');
+                $this->routes[$module] = $this->loadFile('routes', $path, 'route');
             }
         }
         
-        if ( ! isset($this->_aRoutes[$sModule]))
+        if ( ! isset($this->routes[$module]))
         {
             return;
         }
         
         // Analizamos...
-        foreach ($this->_aRoutes[$sModule] as $sKey => $sVal)
+        foreach ($this->routes[$module] as $key => $val)
         {
-            $sKey = str_replace(array(':any', ':num'), array('.+', '[0-9]+'), $sKey);
+            $key = str_replace(array(':any', ':num'), array('.+', '[0-9]+'), $key);
             
-            if ( preg_match('#^'.$sKey.'$#', $sURI))
+            if ( preg_match('#^'.$key.'$#', $uri))
             {
                 // Tenemos una variable de referencia?
-                if (strpos($sVal, '$') !== false && strpos($sKey, '(') !== false)
+                if (strpos($val, '$') !== false && strpos($key, '(') !== false)
                 {
-                    $sVal = preg_replace('#^'.$sKey.'$#', $sVal, $sURI);
+                    $val = preg_replace('#^'.$key.'$#', $val, $uri);
                 }
                 
-                return explode('/', $sModule . '/' . $sVal);
+                return explode('/', $module . '/' . $val);
             }
         }
     }
@@ -185,41 +184,41 @@ class Polaris_Module {
      * Busca archivos en el directorio de un módulo.
      * 
      * @access public
-     * @param string $sFile Nombre del archivo a buscar.
-     * @param string $sModule Módulo en el cual buscarémos.
-     * @param string $sBase Carpeta donde buscarémos.
+     * @param string $file Nombre del archivo a buscar.
+     * @param string $module Módulo en el cual buscarémos.
+     * @param string $base Carpeta donde buscarémos.
      * @return array
      */
-    public function find($sFile, $sModule, $sBase, $sSuffix = '')
+    public function find($file, $module, $base, $suffix = '')
     {
-        $aSegments = explode('/', $sFile);
-        $sBase = str_replace('/', DS, $sBase);
+        $segments = explode('/', $file);
+        $base = str_replace('/', DS, $base);
         
-        $sFile = array_pop($aSegments);
-        $sFileExt = (pathinfo($sFile, PATHINFO_EXTENSION)) ? $sFile : $sFile . $sSuffix . '.php';
+        $file = array_pop($segments);
+        $fileExt = (pathinfo($file, PATHINFO_EXTENSION)) ? $file : $file . $suffix . '.php';
         
-        $sPath = ltrim(implode('/', $aSegments).'/', '/');
+        $path = ltrim(implode('/', $segments).'/', '/');
         
-        $aModules = array();
+        $modules = array();
         
-        $sModule ? $aModules[$sModule] = $sPath : array();
+        $module ? $modules[$module] = $path : array();
         
-        if ( ! empty($aSegments))
+        if ( ! empty($segments))
         {
-            $aModules[array_shift($aSegments)] = ltrim(implode('/', $aSegments).'/', '/');
+            $modules[array_shift($segments)] = ltrim(implode('/', $segments).'/', '/');
         }
         
-        foreach ($aModules as $sModule => $sSubPath)
+        foreach ($modules as $module => $subPath)
         {
-            $sModulePath = MOD_PATH . $sModule . DS . $sBase . $sSubPath;
+            $modulePath = MOD_PATH . $module . DS . $base . $subPath;
             
-            if (is_file($sModulePath.$sFileExt))
+            if (is_file($modulePath.$fileExt))
             {
-                return array($sModulePath, $sFile);
+                return array($modulePath, $file);
             }
         }
         
-        return array(false, $sFile);
+        return array(false, $file);
     }
     
     // --------------------------------------------------------------------
@@ -228,39 +227,39 @@ class Polaris_Module {
      * Cargar archivo de un módulo.
      * 
      * @access public
-     * @param string $sFile Nombre del archivo.
-     * @param string $sPath Ruta completa del archivo.
-     * @param string $sType Si no cargamos un clase entonces estamos solicitando una variable, el tipo se convierte en el nombre de esa variable.
+     * @param string $file Nombre del archivo.
+     * @param string $path Ruta completa del archivo.
+     * @param string $type Si no cargamos un clase entonces estamos solicitando una variable, el tipo se convierte en el nombre de esa variable.
      * @param bool $sResult
      */
-    public function loadFile($sFile, $sPath, $sType = 'class', $bResult = true)
+    public function loadFile($file, $path, $type = 'class', $result = true)
     {
-        $sFilePath = $sPath . $sFile . '.php';
+        $filePath = $path . $file . '.php';
         
-        if ($sType === 'class')
+        if ($type === 'class')
         {
-            if (class_exists($sFile, false))
+            if (class_exists($file, false))
             {
-                return $bResult;
+                return $result;
             }
             
-            require $sFilePath;
+            require $filePath;
         }
         else
         {
             // Cargamos el archivo
-            require $sFilePath;
+            require $filePath;
             
             // Comprobamos 
-            if ( ! isset($$sType) || ! is_array($$sType))
+            if ( ! isset($$type) || ! is_array($$type))
             {
-                show_error(str_replace(MOD_PATH, '', $sFilePath) . ' no contiene el arreglo $' . $sType);
+                show_error(str_replace(MOD_PATH, '', $filePath) . ' no contiene el arreglo $' . $type);
             }
             
-            $bResult = $$sType;
+            $result = $$type;
         }
         
-        return $bResult;
+        return $result;
     }
     
     // --------------------------------------------------------------------
@@ -269,12 +268,12 @@ class Polaris_Module {
      * Registrar un controlador
      * 
      * @access public
-     * @param string $sClass
-     * @param object $oObject
+     * @param string $class
+     * @param object $object
      * @return void
      */
-    public function addClass($sClass, $oObject)
+    public function addClass($class, $object)
     {
-        $this->_aRegistry[strtolower($sClass)] = $oObject;
+        $this->registry[strtolower($class)] = $object;
     }
 }
